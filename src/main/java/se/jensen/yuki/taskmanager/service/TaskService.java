@@ -8,6 +8,7 @@ import se.jensen.yuki.taskmanager.model.TaskStatus;
 import se.jensen.yuki.taskmanager.repository.TaskRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -44,8 +45,14 @@ public class TaskService {
             logger.error("ID was negative or Task was null");
             throw new IllegalArgumentException("ID must be a positive number or Task can't be null.");
         }
-        Task targetTask = taskRepository.findById(id).orElseThrow();
+        Optional<Task> targetOptTask = taskRepository.findById(id);
+        if (targetOptTask.isEmpty()) {
+            logger.error("No such task found with ID= {}", id);
+            throw new NoSuchElementException("No such task found with ID=" + id);
+        }
+        Task targetTask = targetOptTask.get();
         targetTask.copyFrom(task);
+        logger.info("Updated successfully");
         return taskRepository.save(targetTask);
     }
 
@@ -56,8 +63,9 @@ public class TaskService {
         }
         logger.info("Starting findByKeyword with keyword={}", keyword);
         List<Task> tasks = taskRepository.findByKeyword(keyword);
-        if (tasks.size() == 0) {
+        if (tasks.isEmpty()) {
             logger.warn("No tasks found with keyword= {}", keyword);
+            throw new NoSuchElementException("No tasks found with keyword= " + keyword);
         }
         return tasks;
         //return taskRepository.findByKeyword(keyword);

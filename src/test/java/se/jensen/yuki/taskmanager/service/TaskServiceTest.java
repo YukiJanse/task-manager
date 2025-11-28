@@ -10,13 +10,17 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import se.jensen.yuki.taskmanager.model.Task;
+import se.jensen.yuki.taskmanager.model.TaskStatus;
 import se.jensen.yuki.taskmanager.repository.TaskRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -119,20 +123,152 @@ class TaskServiceTest {
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> taskService.add(emptyTask));
     }
-//
-//    @Test
-//    void update() {
-//    }
-//
-//    @Test
-//    void findByKeyword() {
-//    }
-//
-//    @Test
-//    void findByCompleted() {
-//    }
-//
-//    @Test
-//    void deleteTask() {
-//    }
+
+    @Test
+    @DisplayName("Update successfully")
+    void updateSuccess() {
+        // Arrange
+        Task oldTask = new Task(1L, "test", "This is an old task",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now());
+        Task newTask = new Task(1L, "test", "This is a updated task",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now());
+        Mockito.when(taskRepository.findById(1L))
+                .thenReturn(Optional.of(oldTask));
+        Mockito.when(taskRepository.save(oldTask))
+                .thenReturn(newTask);
+
+        // Act
+        Task result = taskService.update(1L, newTask);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(newTask.getId(), result.getId());
+        assertEquals(newTask.getDescription(), result.getDescription());
+    }
+
+    @Test
+    @DisplayName("Fail updating with a wrong ID")
+    void updateFailWithWrongId() {
+        // Arrange
+        Task newTask = new Task(1L, "test", "This is a updated task",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now());
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> taskService.update(0L, newTask));
+    }
+
+    @Test
+    @DisplayName("Fail updating with a empty task")
+    void updateFailWithEmptyTask() {
+        // Arrange
+        Task newTask = null;
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> taskService.update(1L, newTask));
+    }
+
+    @Test
+    @DisplayName("Fail updating with a empty task")
+    void updateFailWithNotExistingId() {
+        // Arrange
+        Task newTask = new Task(1L, "test", "This is a updated task",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now());
+        Mockito.when(taskRepository.findById(2L))
+                .thenReturn(Optional.empty());
+        // Act & Assert
+        assertThrows(NoSuchElementException.class, () -> taskService.update(2L, newTask));
+    }
+
+    @Test
+    @DisplayName("Get tasks successfully by keyword")
+    void findByKeywordSuccess() {
+        // Arrange
+        String keyword = "test";
+        Task task1 = new Task(1L, "test1", "This is a test task",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now());
+        Task task2 = new Task(2L, "test2", "This is a test task",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now());
+        Mockito.when(taskRepository.findByKeyword(Mockito.anyString()))
+                .thenReturn(List.of(task1, task2));
+
+        // Act
+        List<Task> results = taskService.findByKeyword(keyword);
+
+        // Assert
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    @DisplayName("Fail getting tasks by empty keyword")
+    void findByKeywordFailWithEmptyKeyword() {
+        // Arrange
+        String keyword = "";
+
+        // Assert
+        assertThrows(IllegalArgumentException.class, () -> taskService.findByKeyword(keyword));
+    }
+
+    @Test
+    @DisplayName("Fail getting tasks by null string object")
+    void findByKeywordFailWithNullString() {
+        // Arrange
+        String keyword = null;
+
+        // Assert
+        assertThrows(IllegalArgumentException.class, () -> taskService.findByKeyword(keyword));
+    }
+
+    @Test
+    @DisplayName("Fail getting tasks by wrong keyword")
+    void findByKeywordFailWithWrongKeyword() {
+        // Arrange
+        String keyword = "aaa";
+        Mockito.when(taskRepository.findByKeyword(Mockito.anyString()))
+                .thenReturn(new ArrayList<>());
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class, () -> taskService.findByKeyword(keyword));
+    }
+
+    @Test
+    @DisplayName("Get tasks by status")
+    void findByStatusSuccess() {
+        // Arrange
+        Task task = new Task(1L, "test1", "This is a test task",
+                LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now());
+        Mockito.when(taskRepository.findByStatus(TaskStatus.NOT_STARTED))
+                .thenReturn(List.of(task));
+
+        // Act
+        List<Task> results = taskService.findByStatus(TaskStatus.NOT_STARTED);
+
+        // Assert
+        assertEquals(1, results.size());
+    }
+
+    @Test
+    @DisplayName("Fail getting tasks by null status")
+    void findByStatusFailWithNullStatus() {
+        // Arrange
+        TaskStatus status = null;
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> taskService.findByStatus(status));
+    }
+
+    @Test
+    @DisplayName("Delete a task successfully")
+    void deleteTaskSuccess() {
+        taskService.deleteTask(1L);
+
+        verify(taskRepository).deleteById(1L);
+    }
+
+
+    @Test
+    @DisplayName("Fail deleting a task by wrong ID")
+    void deleteTaskFail() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> taskService.deleteTask(0L));
+    }
 }
