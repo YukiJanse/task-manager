@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Task Manager — Notion-ish</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-left">
+        <h1>Task Manager</h1>
+        <p class="sub">Notion-style kanban</p>
+    </div>
+
+    <div class="header-actions">
+        <button class="btn icon" id="themeToggle" title="Toggle dark">
+            <i data-feather="moon"></i>
+        </button>
+        <button class="btn primary" id="openNew">Ny uppgift</button>
+    </div>
+</header>
+
+<main class="board">
+    <section class="column" data-status="NOT_STARTED">
+        <div class="col-head">
+            <h3>To-Do</h3>
+            <span class="col-count" id="count-notstarted">0</span>
+        </div>
+        <div class="col-body" id="col-notstarted" ondragover="allowDrop(event)"
+             ondrop="drop(event,'NOT_STARTED')"></div>
+    </section>
+
+    <section class="column" data-status="IN_PROGRESS">
+        <div class="col-head">
+            <h3>In Progress</h3>
+            <span class="col-count" id="count-inprogress">0</span>
+        </div>
+        <div class="col-body" id="col-inprogress" ondragover="allowDrop(event)"
+             ondrop="drop(event,'IN_PROGRESS')"></div>
+    </section>
+
+    <section class="column" data-status="DONE">
+        <div class="col-head">
+            <h3>Done</h3>
+            <span class="col-count" id="count-done">0</span>
+        </div>
+        <div class="col-body" id="col-done" ondragover="allowDrop(event)" ondrop="drop(event,'DONE')"></div>
+    </section>
+</main>
+
+<!-- Modal / Form -->
+<div class="modal hidden" id="modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 id="modal-title">Ny uppgift</h2>
+            <button class="btn icon" id="closeModal"><i data-feather="x"></i></button>
+        </div>
+
+        <form id="taskForm" class="form">
+            <input type="hidden" id="taskId">
+
+            <label class="field">
+                <span class="label">Titel</span>
+                <input id="title" type="text" required>
+            </label>
+
+            <label class="field">
+                <span class="label">Beskrivning</span>
+                <textarea id="description" rows="4"></textarea>
+            </label>
+
+            <div class="row">
+                <label class="field small">
+                    <span class="label">Start</span>
+                    <input id="startDatetime" type="datetime-local">
+                </label>
+
+                <label class="field small">
+                    <span class="label">End</span>
+                    <input id="endDatetime" type="datetime-local">
+                </label>
+            </div>
+
+            <label class="field">
+                <span class="label">Status</span>
+                <select id="status">
+                    <option value="NOT_STARTED">To-Do</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="DONE">Done</option>
+                </select>
+            </label>
+
+            <div class="form-actions">
+                <button type="submit" class="btn primary">Spara</button>
+                <button type="button" class="btn" id="deleteBtn">Radera</button>
+                <button type="button" class="btn" id="cancelBtn">Avbryt</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>feather.replace()</script>
+</body>
+</html>
