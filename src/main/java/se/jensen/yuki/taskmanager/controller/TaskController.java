@@ -25,8 +25,12 @@ public class TaskController {
     }
 
     @PostMapping
-    public Task addTask(@RequestBody Task task) {
-        return taskService.add(task);
+    public ResponseEntity<?> addTask(@RequestBody Task task) {
+        try {
+            return ResponseEntity.ok(taskService.add(task));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping
@@ -35,24 +39,42 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTask(@PathVariable Long id) {
+    public ResponseEntity<?> getTask(@PathVariable Long id) {
         return taskService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("keyword")
-    public List<Task> getTaskByKeyword(@RequestParam String keyword) {
-        return taskService.findByKeyword(keyword);
+    public ResponseEntity<?> getTaskByKeyword(@RequestParam String keyword) {
+        try {
+            List<Task> tasks = taskService.findByKeyword(keyword);
+            if (!tasks.isEmpty()) {
+                return ResponseEntity.ok(tasks);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("status")
-    public List<Task> getTasksByStatus(TaskStatus status) {
-        return taskService.findByStatus(status);
+    public ResponseEntity<?> getTasksByStatus(TaskStatus status) {
+        try {
+            List<Task> tasks = taskService.findByStatus(status);
+            if (!tasks.isEmpty()) {
+                return ResponseEntity.ok(tasks);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
+    public ResponseEntity<?> updateTask(@PathVariable Long id, @RequestBody Task task) {
         try {
             return ResponseEntity.ok(taskService.update(id, task));
         } catch (NoSuchElementException e) {
@@ -61,7 +83,7 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/update-status")
-    public ResponseEntity<Task> updateStatus(@PathVariable Long id, @RequestBody TaskStatus status) {
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody TaskStatus status) {
         if (status == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -75,8 +97,13 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
+    public ResponseEntity<?> deleteTask(@PathVariable Long id) {
+        try {
+            taskService.deleteTask(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }
