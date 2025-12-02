@@ -30,6 +30,14 @@ public class Task {
     public Task() {
     }
 
+    public Task(String title, String description, LocalDateTime createdDatetime, LocalDateTime startDatetime, LocalDateTime endDatetime) {
+        this.title = title;
+        this.description = description;
+        this.createdDatetime = createdDatetime;
+        this.startDatetime = startDatetime;
+        this.endDatetime = endDatetime;
+    }
+
     public Task(Long id, String title, String description, LocalDateTime createdDatetime, LocalDateTime startDatetime, LocalDateTime endDatetime) {
         this.id = id;
         this.title = title;

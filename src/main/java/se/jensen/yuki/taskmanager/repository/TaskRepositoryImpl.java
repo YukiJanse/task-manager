@@ -15,7 +15,7 @@ public class TaskRepositoryImpl implements TaskRepositoryCustom {
 
     @Override
     public List<Task> findByStatus(TaskStatus status) {
-        String jpql = "SELECT t FROM Task t WHERE COALESCE(t.status, false) = :status";
+        String jpql = "SELECT t FROM Task t WHERE t.status = :status";
 
         return em.createQuery(jpql, Task.class)
                 .setParameter("status", status)
